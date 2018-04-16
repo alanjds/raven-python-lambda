@@ -9,10 +9,14 @@
 """
 import os
 import math
-import psutil
 import logging
 import functools
 from threading import Timer
+
+try:
+    import psutil
+except ImportError:
+    psutil = None
 
 from raven.base import Client
 from raven.conf import setup_logging
@@ -232,6 +236,9 @@ def timeout_warning(config, context):
 
 def memory_warning(config, context):
     """Determines when memory usage is nearing it's max."""
+    if not psutil:
+        return
+
     used = psutil.Process(os.getpid()).memory_info().rss / 1048576
     limit = float(context.memory_limit_in_mb)
     p = used / limit
